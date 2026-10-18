@@ -1,0 +1,986 @@
+# PROJETO: DEVCITY — A CIDADE DOS DESENVOLVEDORES
+
+## 1. Sua missão
+
+Atue como engenheiro de software full stack sênior, arquiteto de sistemas, desenvolvedor de jogos 2D e designer UI/UX especializado em pixel art.
+
+Desenvolva a **DevCity**, uma aplicação web multiplayer assíncrona, com uma cidade isométrica compartilhada onde cada desenvolvedor possui um prédio que evolui automaticamente conforme seus commits no GitHub.
+
+O projeto deve ser funcional, seguro, otimizado e preparado para implantação utilizando serviços gratuitos inicialmente.
+
+**Frase do projeto:** "Seu código constrói esta cidade."
+
+Utilize as imagens de referência fornecidas como direção artística. Não transforme essas imagens em fundos estáticos que simulam um jogo: implemente uma cidade navegável e interativa de verdade.
+
+Se existir código no repositório atual, analise-o antes de implementar e preserve o que já estiver correto.
+
+Não faça apenas um protótipo visual com botões sem funcionamento. Implemente os fluxos completos, incluindo persistência de dados, autenticação, mapa e integração com o GitHub.
+
+---
+
+## 2. Regras definitivas do projeto
+
+Estas regras têm prioridade sobre qualquer elemento contraditório mostrado nas imagens de referência.
+
+1. Não existe construtor de prédios.
+2. Não existe editor modular de arquitetura.
+3. Não existem interiores de casas ou prédios.
+4. Não existe personagem controlável andando pela cidade.
+5. Não existe chat online ou sistema de mensagens livres entre usuários.
+6. Todos os usuários começam com exatamente o mesmo modelo de casa.
+7. Os prédios evoluem automaticamente conforme os commits contabilizados.
+8. Apenas commits geram experiência. Issues, pull requests, estrelas e outras atividades não dão XP.
+9. A linguagem de programação predominante define o estilo arquitetônico dos prédios avançados.
+10. Cada conta GitHub pode possuir somente um prédio e um terreno.
+11. O terreno é permanente enquanto a conta estiver ativa.
+12. A cidade é compartilhada: todos enxergam os mesmos prédios nas mesmas coordenadas.
+13. O sistema de mural permite somente recados predefinidos.
+14. As notas pessoais são privadas e nunca aparecem no perfil público.
+15. Nenhum usuário pode modificar o nível, os commits, o terreno ou o XP diretamente pelo frontend.
+16. O projeto deve priorizar desempenho, inclusive em computadores modestos e dispositivos móveis.
+
+**Importante:** a evolução do prédio é automática. Não adicionar botões de personalização de fachada, decoração, tamanho, altura ou peças.
+
+---
+
+## 3. Tecnologias
+
+Frontend:
+- React com TypeScript estrito.
+- Vite.
+- Tailwind CSS.
+- React Router.
+- PixiJS para renderização da cidade 2D isométrica.
+- GSAP somente para animações de interface e transições pontuais.
+- Lucide para ícones de interface.
+- Zustand ou Context API para estado, escolhendo a solução mais simples.
+
+Backend:
+- Supabase PostgreSQL.
+- Supabase Auth.
+- Supabase Edge Functions.
+- Supabase pg_cron e pg_net.
+- Políticas Row Level Security.
+- GitHub OAuth.
+- GitHub GraphQL API.
+
+Hospedagem:
+- Cloudflare Pages para o frontend.
+- Supabase para autenticação, banco e funções.
+
+Qualidade:
+- ESLint.
+- Prettier.
+- Vitest.
+- Playwright.
+- Migrações SQL versionadas.
+- Variáveis de ambiente documentadas.
+
+Não utilizar microserviços, Docker obrigatório, Kubernetes, Redis ou servidores WebSocket dedicados sem necessidade comprovada.
+
+---
+
+# PARTE I — IDENTIDADE VISUAL
+
+## 4. Direção artística
+
+Estilo principal: **cozy colorful isometric pixel art**.
+
+Referências conceituais: jogos indie de construção de cidades aconchegantes, com ambientes detalhados e atmosfera acolhedora.
+
+A cidade deve transmitir:
+- Criatividade.
+- Aconchego.
+- Comunidade.
+- Progresso.
+- Descoberta.
+- Nostalgia de jogos 2D.
+
+Características:
+- Pixel art 2D isométrica.
+- Fachadas coloridas e acolhedoras.
+- Árvores, flores, canteiros e jardins.
+- Ruas com calçadas.
+- Pequenas praças e bancos.
+- Iluminação suave.
+- Janelas com luz quente.
+- Elementos arquitetônicos distintos.
+- Sombras discretas.
+- Cores harmoniosas.
+
+Evitar:
+- Modelos 3D reais.
+- Estética excessivamente futurista.
+- Neon exagerado.
+- Glassmorphism.
+- Cards genéricos de dashboards.
+- Efeitos pesados.
+- Interfaces visualmente poluídas.
+- Animações contínuas desnecessárias.
+
+### Paleta principal
+
+- Verde suave: #A8CFA5
+- Creme: #F5E6C8
+- Coral: #E9A38B
+- Azul: #91B9CF
+- Amarelo: #E6C46D
+- Verde-escuro: #344E49
+- Azul-marinho: #17263E
+
+Utilizar Pixelify Sans em títulos curtos e Nunito Sans nos textos de interface.
+
+A pixel art deve preservar pixels nítidos, sem suavização que deixe os sprites borrados.
+
+---
+
+## 5. Design da cidade
+
+Criar uma cidade isométrica expansível com:
+- Terrenos residenciais para desenvolvedores.
+- Ruas conectadas.
+- Calçadas.
+- Árvores e vegetação.
+- Praças públicas.
+- Postes.
+- Bancos.
+- Pequenos canteiros.
+- Decorações urbanas.
+- Alguns canais ou lagos decorativos, quando compatíveis com a geração do mapa.
+
+O mapa será o elemento visual principal da aplicação.
+
+Não construir inicialmente um mapa inteiro como uma única imagem gigante.
+
+Criar tiles e sprites reutilizáveis, com coordenadas lógicas consistentes.
+
+Separar o mundo em setores (chunks), gerados deterministicamente.
+
+O mesmo setor precisa ser idêntico para todos os usuários.
+
+### Bairros conceituais
+
+- Praça dos Commits: centro urbano.
+- Jardim do Código: região verde e acolhedora.
+- Distrito Criativo: edifícios e decoração urbana coloridos.
+- Porto Open Source: arquitetura industrial e área portuária decorativa.
+
+Esses bairros definem somente a estética urbana.
+
+Não obrigar desenvolvedores de uma linguagem a morar em um bairro específico.
+
+---
+
+# PARTE II — SISTEMA DE PRÉDIOS
+
+## 6. Prédio inicial
+
+Quando um usuário conquista seu primeiro terreno, recebe uma casa pequena.
+
+Características:
+- Um andar.
+- Paredes creme.
+- Telhado de telhas avermelhadas.
+- Porta de madeira.
+- Janelas iluminadas.
+- Pequeno jardim.
+- Estética acolhedora.
+
+Todos os jogadores dos níveis iniciais usam o mesmo sprite.
+
+Não oferecer escolha de casa inicial.
+
+## 7. Evolução por níveis
+
+Criar cinco estágios visuais:
+
+| Níveis | Estágio | Visual |
+|---|---|---|
+| 1–4 | Casa inicial | Pequena casa igual para todos |
+| 5–9 | Casa evoluída | Construção maior, até dois andares |
+| 10–19 | Edifício temático | Arquitetura baseada na linguagem |
+| 20–34 | Edifício avançado | Construção mais elaborada |
+| 35+ | Edifício especial | Melhor versão da arquitetura correspondente |
+
+Os níveis são progresso de jogo; o sprite só muda nos marcos definidos.
+
+Não criar um novo edifício para cada nível individual.
+
+Todos os modelos precisam manter uma área de implantação compatível com o terreno. A evolução pode aumentar visualmente a altura, mas não ocupar terrenos vizinhos.
+
+A construção pode ter até aproximadamente cinco andares aparentes, evitando edifícios infinitos que escondam os prédios ao redor.
+
+Os modelos devem ser facilmente substituíveis por assets de pixel art mais elaborados sem alterar a lógica do jogo.
+
+## 8. Estilos arquitetônicos por linguagem
+
+A partir do estágio temático, o visual depende da principal linguagem de programação identificada no GitHub.
+
+JavaScript:
+- Fachada urbana contemporânea.
+- Detalhes amarelos.
+- Grandes janelas.
+- Toldos e terraços.
+- Arquitetura criativa.
+
+Python:
+- Fachada natural.
+- Tons verdes e azuis.
+- Elementos de madeira.
+- Vegetação e jardins suspensos.
+- Arquitetura acolhedora.
+
+Rust:
+- Arquitetura industrial.
+- Tijolos terracota.
+- Estruturas metálicas.
+- Janelas com arcos.
+- Tubulações decorativas.
+
+Go:
+- Arquitetura minimalista.
+- Cores brancas e azul-claras.
+- Linhas geométricas limpas.
+- Grandes janelas.
+- Terraços discretos.
+
+TypeScript:
+- Arquitetura modular.
+- Azul e violeta.
+- Blocos geométricos.
+- Fachadas assimétricas.
+- Painéis decorativos.
+
+Java:
+- Arquitetura clássica.
+- Alvenaria elegante.
+- Telhado tradicional.
+- Grandes entradas.
+- Janelas simétricas.
+
+Criar uma arquitetura genérica para linguagens não contempladas.
+
+Usar os bytes de código por linguagem reportados pelo GitHub em repositórios públicos próprios e não-forks como critério inicial de predominância. Documentar que isso é uma aproximação, não uma contagem da linguagem de cada commit.
+
+A identificação deve ser automática, recalculada periodicamente. Se a principal linguagem mudar, atualizar o estilo correspondente sem modificar o nível.
+
+A identidade arquitetônica deve ser reconhecível pelo formato da construção, não apenas pelas cores ou por logotipos gigantes.
+
+---
+
+## 9. Animação de evolução do prédio
+
+Esta é uma funcionalidade importante.
+
+Quando o usuário alcançar um estágio que altera o sprite do prédio:
+
+1. Identificar que houve mudança de estágio.
+2. Mostrar uma pequena notificação de evolução.
+3. Posicionar andaimes temporários ao redor da construção.
+4. Exibir partículas de poeira em pixel art.
+5. Fazer uma animação curta de construção.
+6. Substituir o sprite antigo pelo novo.
+7. Remover andaimes e poeira.
+8. Mostrar uma pequena celebração.
+
+Duração aproximada: **2 segundos**.
+
+Exemplo de sequência:
+- 0–0,3 s: andaimes aparecem.
+- 0,3–0,9 s: partículas de poeira e movimento discreto.
+- 0,9–1,4 s: troca do sprite com transição.
+- 1,4–2 s: andaimes desaparecem e aparece a celebração.
+
+Utilizar sprites simples e animações leves.
+
+Não gerar vídeos ou efeitos 3D para essa funcionalidade.
+
+O evento visual deve aparecer para o dono quando ele estiver online ou na próxima visita após a sincronização. Não reproduzir a animação de todos os prédios da cidade simultaneamente.
+
+Respeitar a preferência `prefers-reduced-motion`, oferecendo uma troca imediata de sprite.
+
+Registrar a evolução no banco para não repetir a celebração continuamente.
+
+---
+
+# PARTE III — GITHUB E PROGRESSO
+
+## 10. Login
+
+Oferecer:
+- Entrar com GitHub.
+- Explorar como visitante.
+
+Visitantes:
+- Podem navegar pela cidade.
+- Podem consultar prédios públicos.
+- Podem pesquisar usuários.
+- Não possuem terreno.
+- Não podem deixar recados.
+- Não podem acessar notas privadas.
+
+Usuários autenticados:
+- Podem escolher terreno.
+- Possuem prédio.
+- Ganham XP por commits válidos.
+- Podem acessar suas notas.
+- Podem deixar recados predefinidos.
+- Podem consultar suas estatísticas.
+
+Identificar as contas pelo ID estável do GitHub, não apenas pelo nome de usuário, que pode mudar.
+
+## 11. Sistema de commits e XP
+
+Apenas commits reconhecidos pelo GitHub devem contribuir para o progresso.
+
+Usar a GitHub GraphQL API, verificando a viabilidade e a semântica atual de `contributionsCollection` e `totalCommitContributions`.
+
+Não utilizar o total geral do calendário de contribuições, pois ele pode incluir atividades que não são commits.
+
+Regra inicial, configurável:
+
+- Um commit válido = 10 XP.
+- Máximo inicial de 100 XP por dia.
+- Commits anteriores ao cadastro não concedem XP retroativo.
+- O histórico antigo pode ser exibido separadamente como informação do perfil.
+
+A experiência acumulada nunca pode ser definida pelo frontend.
+
+Criar uma função central para o cálculo do nível, com progressão crescente e testes automatizados.
+
+Uma proposta de fórmula inicial:
+
+`xpParaNivel(n) = 25 × (n - 1) × n`
+
+O nível deve ser calculado a partir do XP validado, e o estágio visual a partir do nível.
+
+Evitar que um mesmo commit contabilizado seja recompensado novamente.
+
+### Contabilização correta
+
+- Utilizar períodos de datas fixos em UTC.
+- Registrar snapshots diários das contribuições de commits.
+- Manter registros de XP já concedido por usuário e por data.
+- Suportar reexecução da sincronização sem duplicar recompensas.
+- Processar dias não sincronizados após falhas.
+- Considerar que dados do GitHub podem aparecer com atraso ou mudar após reescrita de histórico.
+- Respeitar o limite diário de XP por data da contribuição.
+- Não conceder XP por dados não verificados.
+- Não tratar commits em branches não reconhecidas pelo gráfico do GitHub como contribuições válidas.
+- Não pedir acesso a repositórios privados na versão inicial.
+
+Deixar claro na interface quais commits são elegíveis e que a contagem poderá diferir do número bruto de commits feitos pelo usuário.
+
+## 12. Sincronização automática
+
+Usar Supabase pg_cron para disparar uma Edge Function diariamente.
+
+Fluxo:
+
+1. O agendador inicia a tarefa.
+2. A função identifica usuários que precisam ser sincronizados.
+3. Processa usuários em lotes.
+4. Consulta a GitHub GraphQL API.
+5. Valida as respostas.
+6. Atualiza snapshots.
+7. Calcula o XP elegível ainda não concedido.
+8. Atualiza nível e estágio visual em uma transação segura.
+9. Registra eventuais evoluções.
+10. Salva horário e status da sincronização.
+
+Implementar:
+- Paginação ou processamento em lotes.
+- Limite de concorrência.
+- Retry com backoff.
+- Respeito ao rate limit do GitHub.
+- Logs.
+- Controle de execução duplicada.
+- Recuperação de tarefas interrompidas.
+- Proteção da Edge Function para impedir execução pública não autorizada.
+
+Credenciais e tokens devem permanecer exclusivamente no backend, com permissões mínimas necessárias.
+
+Se a infraestrutura permitir, disponibilizar uma atualização manual limitada, por exemplo uma vez a cada 24 horas por usuário, sem permitir abuso de requisições.
+
+Mostrar "Última sincronização" no perfil.
+
+---
+
+# PARTE IV — CIDADE PROCEDURAL ONLINE
+
+## 13. Geração procedural
+
+Criar um mundo 2D isométrico, compartilhado e persistente.
+
+A cidade deve utilizar geração procedural determinística baseada em uma seed global fixa.
+
+Dividir o mapa em chunks.
+
+Cada chunk pode conter:
+- Ruas.
+- Calçadas.
+- Terrenos.
+- Árvores.
+- Praças pequenas.
+- Objetos decorativos.
+
+A geração deve produzir ruas conectadas entre chunks vizinhos.
+
+A seed e as coordenadas determinam o cenário base.
+
+Os dados dos usuários são carregados por cima desse cenário.
+
+Não regenerar a posição de um prédio ocupado.
+
+## 14. Terrenos
+
+Cada terreno possui:
+- Identificador único.
+- Bairro.
+- Coordenadas.
+- Estado de ocupação.
+- Identificador do proprietário, quando ocupado.
+
+Regras:
+- Um usuário só pode possuir um terreno.
+- Um terreno só pode possuir um proprietário.
+- Terrenos ocupados não podem ser reivindicados.
+- A atribuição deve ser feita por transação atômica no banco.
+- Duas pessoas tentando selecionar o mesmo terreno não podem receber a propriedade simultaneamente.
+- Os terrenos permanecem estáveis mesmo após mudanças na geração procedural.
+
+Criar um fluxo no qual o jogador visualize terrenos livres, escolha um deles e confirme a aquisição.
+
+Ao confirmar, a casa inicial aparece no mapa.
+
+A seleção de terreno não permite modificar o formato do lote nem construir livremente.
+
+## 15. Expansão automática
+
+A cidade começa com um número limitado de bairros ativos.
+
+Quando a ocupação atingir determinado limite configurável, por exemplo 80%, novos chunks e terrenos poderão ser disponibilizados.
+
+Não gerar milhares de terrenos no banco antecipadamente.
+
+A expansão não pode alterar bairros já existentes.
+
+Manter os identificadores e coordenadas persistentes.
+
+## 16. Carregamento e desempenho
+
+Renderizar apenas a área visível e uma pequena margem de segurança.
+
+Implementar:
+- Viewport com pan e zoom.
+- Carregamento sob demanda dos chunks próximos.
+- Descarregamento de chunks distantes.
+- Culling de objetos fora da câmera.
+- Spritesheets e texturas compartilhadas.
+- Ordenação de profundidade isométrica.
+- Texturas com filtragem nearest-neighbor.
+- Limites configuráveis de densidade visual.
+- Redução de animações em dispositivos modestos.
+- Renderização sob demanda quando a cena estiver estática, sempre que viável.
+- Reutilização de assets e elementos decorativos.
+- Cache das consultas de chunks.
+
+O mapa deve permitir navegar por milhares de construções cadastradas sem carregar todas simultaneamente.
+
+Não enviar todos os prédios do banco para cada visitante.
+
+O sistema não precisa de personagens em tempo real ou servidor de jogo permanente.
+
+Quando um usuário entrar, ele recebe o estado persistido da cidade e das construções visíveis.
+
+---
+
+# PARTE V — TELAS
+
+## 17. Tela de boas-vindas
+
+Criar uma landing page no estilo de jogo indie.
+
+Elementos:
+- Logotipo DevCity.
+- Cidade ilustrada e levemente animada.
+- Frase "Seu código constrói esta cidade".
+- Explicação curta.
+- Botão "Entrar com GitHub".
+- Botão "Explorar como visitante".
+- Pequena representação visual da evolução da casa inicial até um prédio avançado.
+
+Usar o visual das referências, mas manter carregamento otimizado.
+
+## 18. Tela principal da cidade
+
+A cidade deve ocupar a maior parte da tela.
+
+Interface discreta nas extremidades.
+
+Menu:
+- Meu prédio.
+- Explorar.
+- Mapa.
+- Notas, apenas para usuários autenticados.
+- Perfil e configurações.
+
+Funcionalidades:
+- Arrastar o mapa.
+- Zoom.
+- Selecionar edifícios.
+- Ver nome do proprietário.
+- Ver nível.
+- Ver linguagem.
+- Acessar painel do prédio.
+- Procurar desenvolvedores.
+- Voltar ao próprio terreno.
+
+Ao passar o mouse sobre um edifício, mostrar um tooltip.
+
+Ao clicar, aproximar a câmera suavemente e abrir o perfil correspondente.
+
+Em dispositivos touch, permitir toque para seleção e gesto de pinça para zoom.
+
+## 19. Tela de escolha de terreno
+
+Mostrar a cidade com os terrenos disponíveis destacados.
+
+O usuário toca em um terreno e vê:
+- Nome do bairro.
+- Localização.
+- Preview da casa inicial.
+- Botão de confirmação.
+
+Após confirmar, a casa aparece e o sistema salva a propriedade.
+
+Implementar estados de carregamento, erro, ocupação simultânea e confirmação concluída.
+
+## 20. Meu prédio
+
+Criar um painel pessoal com:
+- Avatar do GitHub.
+- Nome de usuário.
+- Biografia, quando disponível.
+- Linguagem predominante.
+- Número de commits elegíveis contabilizados.
+- XP acumulado.
+- Nível.
+- Barra de progresso.
+- Estágio atual.
+- Próximo estágio.
+- Preview do prédio.
+- Última sincronização.
+- Lista de repositórios públicos em destaque.
+- Acesso às notas privadas.
+- Histórico de evoluções.
+
+Não mostrar opções de construção ou personalização arquitetônica.
+
+O estilo do prédio é definido automaticamente.
+
+## 21. Visitar outro prédio
+
+Ao selecionar o prédio de outra pessoa:
+- Centralizar a câmera.
+- Mostrar proprietário.
+- Exibir estágio e linguagem.
+- Mostrar repositórios públicos selecionados.
+- Exibir link externo para GitHub.
+- Permitir abrir o mural da porta.
+
+A visita acontece por meio de câmera e painéis.
+
+Não existe interior 3D ou 2D explorável.
+
+## 22. Mural da porta
+
+Implementar somente mensagens pré-aprovadas.
+
+Exemplos:
+- "Prédio incrível! ❤️"
+- "Adorei seus projetos! ⭐"
+- "Mandou bem! 👏"
+- "Passei para conhecer! 👋"
+- "Parabéns pela evolução! 🎉"
+
+Armazenar o identificador da mensagem, não texto livre enviado pelo usuário.
+
+Regras:
+- Apenas usuários autenticados enviam recados.
+- Não permitir URLs, imagens, HTML ou texto personalizado.
+- Limitar quantidade diária por usuário e por prédio.
+- Impedir spam repetido.
+- O dono pode apagar recados.
+- O dono pode bloquear usuários.
+- O dono pode desativar o mural.
+- O mural pode exibir mensagens recentes com paginação.
+
+Não implementar chat ou mensagens privadas.
+
+## 23. Notas privadas
+
+Criar uma seção independente acessível pelo menu do usuário.
+
+Não representar as notas como interior de casa.
+
+Funcionalidades:
+- Criar nota.
+- Editar.
+- Excluir.
+- Organizar por categoria.
+- Pesquisar.
+- Salvar links.
+- Markdown básico.
+- Checklist.
+- Salvamento automático com tratamento de conflitos.
+- Confirmação antes de exclusões destrutivas.
+
+As notas devem ser privadas por padrão.
+
+Um usuário jamais pode consultar as notas de outro, mesmo alterando URLs, IDs ou requisições manualmente.
+
+Não permitir execução de HTML ou scripts incorporados ao Markdown.
+
+## 24. Mapa e descoberta
+
+Criar uma visão de navegação por bairros.
+
+Funcionalidades:
+- Localizar bairro.
+- Buscar pelo nome de usuário do GitHub.
+- Encontrar o próprio prédio.
+- Localizar outros desenvolvedores.
+- Visualizar regiões disponíveis.
+- Viajar rapidamente para um prédio.
+- Compartilhar um link público que centraliza a cidade naquela construção.
+
+Não criar ranking competitivo nem economia virtual na versão inicial.
+
+## 25. Layout mobile
+
+Criar design responsivo real.
+
+Desktop:
+- Cidade em tela ampla.
+- Menus pequenos no topo.
+- Painéis laterais.
+
+Mobile:
+- Cidade com viewport adaptado.
+- Interface resumida.
+- Menus inferiores.
+- Painéis bottom sheet.
+- Botões acessíveis ao toque.
+- Gestos de navegação.
+- Controle de zoom.
+- Sem textos minúsculos.
+- Sem horizontal scroll indesejado.
+
+Permitir reduzir efeitos e densidade gráfica nas configurações.
+
+---
+
+# PARTE VI — BANCO DE DADOS
+
+## 26. Estrutura sugerida
+
+Criar migrações para entidades equivalentes a:
+
+**profiles**
+- id
+- github_id único
+- github_username
+- avatar_url
+- display_name
+- bio
+- primary_language
+- current_xp
+- current_level
+- created_at
+- updated_at
+
+**city_chunks**
+- id
+- chunk_x
+- chunk_y
+- neighborhood_id
+- generation_version
+- seed
+- created_at
+
+**lots**
+- id
+- chunk_id
+- tile_x
+- tile_y
+- owner_id
+- created_at
+
+**buildings**
+- id
+- owner_id único
+- lot_id único
+- language
+- level
+- stage
+- sprite_key
+- updated_at
+
+**commit_daily_snapshots**
+- user_id
+- contribution_date
+- max_observed_commits
+- updated_at
+
+**xp_awards**
+- id
+- user_id
+- contribution_date
+- credited_commits
+- awarded_xp
+- created_at
+
+**github_sync_jobs**
+- id
+- user_id
+- status
+- cursor_or_period
+- attempts
+- last_error
+- started_at
+- finished_at
+
+**building_evolution_events**
+- id
+- user_id
+- previous_stage
+- new_stage
+- created_at
+- viewed_at
+
+**notes**
+- id
+- user_id
+- title
+- content
+- category
+- created_at
+- updated_at
+
+**door_messages**
+- id
+- building_id
+- sender_id
+- preset_message_id
+- created_at
+
+**blocked_users**
+- owner_id
+- blocked_user_id
+- created_at
+
+**repository_cache**
+- user_id
+- github_repository_id
+- name
+- description
+- url
+- language
+- stars
+- updated_at
+
+Ajustar os nomes e relacionamentos quando necessário.
+
+Criar índices, restrições, chaves estrangeiras e unicidade.
+
+Não armazenar informações duplicadas sem necessidade.
+
+Separar dados públicos de dados privados por políticas e permissões.
+
+---
+
+# PARTE VII — SEGURANÇA
+
+## 27. Requisitos obrigatórios
+
+- Habilitar RLS nas tabelas expostas.
+- Validar a autenticação no backend.
+- Impedir IDOR/BOLA em todas as operações por identificador.
+- Usuários só podem alterar suas próprias notas.
+- Usuários não podem editar livremente XP, nível, quantidade de commits ou proprietário de terreno.
+- Validar transações de aquisição de terreno no servidor.
+- Proteger as funções administrativas.
+- Não colocar service role keys no frontend.
+- Guardar credenciais em secrets apropriados.
+- Aplicar limites de requisições nas operações sensíveis.
+- Sanitizar conteúdo Markdown.
+- Validar os links externos.
+- Evitar XSS.
+- Tratar dados de perfil e descrição recebidos do GitHub como conteúdo não confiável.
+- Impedir gravação de campos administrativos pelo usuário.
+- Registrar erros sem expor tokens ou informações privadas.
+- Permitir que o usuário exclua sua conta e suas notas.
+- Tratar corretamente estados de sessão expirada.
+
+Implementar testes para verificar que uma conta A não consegue visualizar ou alterar as notas da conta B.
+
+Também testar tentativas de alterar o proprietário de outro terreno ou enviar XP diretamente.
+
+---
+
+# PARTE VIII — IMPLEMENTAÇÃO E VALIDAÇÃO
+
+## 28. Assets e renderização
+
+As imagens de referência são conceituais.
+
+Não assumir que elas já estão recortadas em sprites reutilizáveis.
+
+Organizar os assets:
+- Terrenos e tiles.
+- Ruas.
+- Vegetação.
+- Decorações.
+- Casas iniciais.
+- Prédios por estágio e linguagem.
+- Sprites de andaimes.
+- Partículas.
+- Ícones da interface.
+
+Criar inicialmente sprites simplificados e consistentes, gerados por código ou usando assets locais com licença adequada, para que o jogo seja funcional.
+
+Não depender de serviços externos de geração de imagens durante a execução do site.
+
+Centralizar o mapeamento `language + stage → sprite_key`.
+
+Permitir substituir os sprites provisórios por artes definitivas posteriormente.
+
+## 29. Estados e tratamento de erros
+
+Toda tela deve contemplar:
+- Carregamento.
+- Sucesso.
+- Estado vazio.
+- Falha de rede.
+- Permissão negada.
+- Sessão expirada.
+- Dados ausentes.
+- Nova tentativa, quando aplicável.
+
+O site deve continuar navegável mesmo quando a API do GitHub estiver temporariamente indisponível, utilizando o último estado validado.
+
+Não zerar o progresso do usuário devido a uma falha temporária de sincronização.
+
+## 30. Testes automatizados
+
+Criar testes para:
+- Cálculo de XP e nível.
+- Transição entre estágios visuais.
+- Idempotência da sincronização GitHub.
+- Limite diário de XP.
+- Reprocessamento de datas.
+- Geração determinística dos chunks.
+- Continuidade de ruas entre setores.
+- Persistência dos terrenos.
+- Disputa simultânea pelo mesmo terreno.
+- Propriedade única por usuário.
+- Permissões de notas.
+- Segurança do mural.
+- Busca de usuários.
+- Responsividade.
+- Navegação e seleção de prédios.
+- Animação de evolução.
+- Preferência por movimento reduzido.
+
+Testar também o caso de um usuário mudar de nome no GitHub.
+
+## 31. Desenvolvimento em etapas
+
+### Etapa 1 — Fundação
+
+Criar estrutura do projeto, dependências, design system, rotas, autenticação e migrações SQL.
+
+### Etapa 2 — Cidade interativa
+
+Implementar PixiJS, câmera, zoom, pan, tiles isométricos, chunks procedurais e prédios de demonstração.
+
+### Etapa 3 — Cadastro e terrenos
+
+Conectar GitHub, criar perfil e implementar aquisição segura e persistente de terreno.
+
+### Etapa 4 — Commits e evolução
+
+Integrar GitHub GraphQL, calcular XP, criar sincronização, atualizar sprites e implementar animação de construção.
+
+### Etapa 5 — Perfil e visitas
+
+Implementar painéis dos prédios, repositórios públicos, busca, navegação e mural predefinido.
+
+### Etapa 6 — Notas privadas
+
+Implementar CRUD, Markdown, categorias, autosave e políticas de segurança.
+
+### Etapa 7 — Otimização
+
+Aprimorar culling, carregamento dos chunks, spritesheets, desempenho mobile e tratamento de erros.
+
+### Etapa 8 — Publicação
+
+Preparar Cloudflare Pages, Supabase, OAuth, cron, variáveis de ambiente, testes e documentação.
+
+Cada etapa deve deixar o projeto executável e verificável.
+
+---
+
+## 32. Entregáveis finais
+
+Entregar:
+
+1. Código-fonte organizado e funcional.
+2. Interface completa em português do Brasil.
+3. Cidade procedural navegável.
+4. Autenticação GitHub.
+5. Sistema de terrenos persistentes.
+6. Evolução automática baseada exclusivamente em commits.
+7. Modelos visuais de prédios por linguagem.
+8. Animação de evolução com andaimes e poeira.
+9. Perfil e visitação de prédios.
+10. Mural seguro com mensagens predefinidas.
+11. Notas privadas.
+12. Migrações SQL e políticas RLS.
+13. Edge Functions e agendamento da sincronização.
+14. Testes automatizados.
+15. Arquivo `.env.example` sem segredos reais.
+16. README com instruções de execução e deploy.
+17. Modo de demonstração com dados fictícios, permitindo testar a interface sem credenciais reais.
+
+O modo de demonstração não pode fingir que está consultando o GitHub ou salvando informações reais.
+
+Documentar claramente quais integrações precisam ser configuradas pelo proprietário do projeto.
+
+Executar os testes, verificar o build e corrigir os erros encontrados. Relatar somente as validações realmente executadas.
+
+## 33. Critério de conclusão
+
+A DevCity estará funcional quando dois usuários diferentes conseguirem:
+
+- Entrar com suas contas do GitHub.
+- Escolher terrenos distintos.
+- Ver seus prédios na mesma cidade.
+- Navegar pelo mapa.
+- Visitar o prédio um do outro.
+- Deixar recados predefinidos.
+- Consultar os projetos públicos.
+- Guardar notas privadas sem que outro usuário possa acessá-las.
+- Receber XP de commits elegíveis sem duplicação.
+- Evoluir automaticamente seus prédios.
+- Visualizar a animação de evolução.
+
+O projeto deve parecer um jogo indie de cidade aconchegante, mas funcionar como uma aplicação web real.
+
+**Prioridade máxima:** cidade bonita, identidade visual consistente, boa performance, segurança e funcionalidades verdadeiras.
+
+Não adicionar funcionalidades que contradigam as decisões do projeto. Em especial: sem construtor, sem interiores e sem chat livre.
+
+Comece analisando o repositório e preparando uma arquitetura enxuta. Em seguida, implemente as etapas de forma incremental, mantendo a aplicação executável. Não interrompa o desenvolvimento apenas para entregar um plano ou um mockup.

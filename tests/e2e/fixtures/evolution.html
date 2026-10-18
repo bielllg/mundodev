@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Teste de evolução</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      .city-canvas {
+        position: absolute;
+        inset: 0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module">
+      import React, { useState } from "react";
+      import { createRoot } from "react-dom/client";
+      import { City } from "/src/City.tsx";
+      const lot = {
+        id: "6:6",
+        tile_x: 6,
+        tile_y: 6,
+        chunk_x: 0,
+        chunk_y: 0,
+        owner_id: "fixture",
+      };
+      const resident = {
+        id: "fixture",
+        github_id: "0",
+        github_username: "fixture",
+        display_name: "Teste",
+        bio: "",
+        primary_language: "Python",
+        current_xp: 2250,
+        avatar_url: "",
+        last_synced_at: null,
+        wall_enabled: true,
+        lot,
+        building_id: "fixture-building",
+      };
+      function Fixture() {
+        const [done, setDone] = useState(false);
+        return React.createElement(
+          React.Fragment,
+          null,
+          React.createElement(City, {
+            residents: [resident],
+            lots: [lot],
+            onSelect: () => {},
+            onLot: () => {},
+            onRegion: () => {},
+            low: true,
+            evolution: {
+              lot,
+              previousStage: 2,
+              newStage: 3,
+              eventIds: ["fixture-event"],
+            },
+            onEvolutionDone: () => setDone(true),
+          }),
+          React.createElement(
+            "output",
+            {
+              "data-testid": "evolution-status",
+              style: { position: "relative" },
+            },
+            done ? "Concluída" : "Em construção",
+          ),
+        );
+      }
+      createRoot(document.getElementById("root")).render(
+        React.createElement(Fixture),
+      );
+    </script>
+  </body>
+</html>
